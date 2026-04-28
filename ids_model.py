@@ -4,9 +4,7 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report
-
-import tensorflow as tf
-from keras import layers, models
+from imblearn.over_sampling import SMOTE
 
 # -------------------------------
 # 1. Load dataset
@@ -39,13 +37,15 @@ train = train.drop("difficulty", axis=1)
 test = test.drop("difficulty", axis=1)
 
 # -------------------------------
-# 3. Encode categorical
+# 3. Encode categorical (FIXED)
 # -------------------------------
 cat_cols = ["protocol_type", "service", "flag"]
 
 for col in cat_cols:
     le = LabelEncoder()
-    train[col] = le.fit_transform(train[col])
+    combined = pd.concat([train[col], test[col]])
+    le.fit(combined)
+    train[col] = le.transform(train[col])
     test[col] = le.transform(test[col])
 
 # -------------------------------
@@ -70,91 +70,28 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-# =========================================================
-#  GAN (Improved usage)
-# =========================================================
-
-attack_data = train[train['label'] == 1].drop('label', axis=1)
-attack_data = attack_data.iloc[:, :10]
-
-attack_data = (attack_data - attack_data.min()) / (attack_data.max() - attack_data.min())
-attack_data = attack_data.fillna(0)
-
-real = attack_data.values
-
-def build_generator():
-    model = models.Sequential([
-        layers.Dense(32, activation='relu', input_dim=10),
-        layers.Dense(64, activation='relu'),
-        layers.Dense(10, activation='sigmoid')
-    ])
-    return model
-
-def build_discriminator():
-    model = models.Sequential([
-        layers.Dense(64, activation='relu', input_dim=10),
-        layers.Dense(32, activation='relu'),
-        layers.Dense(1, activation='sigmoid')
-    ])
-    return model
-
-generator = build_generator()
-discriminator = build_discriminator()
-
-discriminator.compile(optimizer='adam', loss='binary_crossentropy')
-
-discriminator.trainable = False
-
-gan_input = layers.Input(shape=(10,))
-generated = generator(gan_input)
-output = discriminator(generated)
-
-gan = models.Model(gan_input, output)
-gan.compile(optimizer='adam', loss='binary_crossentropy')
+# -------------------------------
+# 7. Handle imbalance (BETTER THAN GAN)
+# -------------------------------
+smote = SMOTE(random_state=42)
+X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
 
 # -------------------------------
-# Train GAN
+# 8. Train model (TUNED)
 # -------------------------------
-for epoch in range(200):
-    idx = np.random.randint(0, real.shape[0], 32)
-    real_samples = real[idx]
+model = RandomForestClassifier(
+    n_estimators=200,
+    max_depth=20,
+    min_samples_split=5,
+    class_weight="balanced",
+    random_state=42,
+    n_jobs=-1
+)
 
-    noise = np.random.normal(0, 1, (32, 10))
-    fake_samples = generator.predict(noise, verbose=0)
-
-    X = np.vstack((real_samples, fake_samples))
-    y = np.vstack((np.ones((32,1)), np.zeros((32,1))))
-
-    discriminator.train_on_batch(X, y)
-
-    noise = np.random.normal(0, 1, (32,10))
-    gan.train_on_batch(noise, np.ones((32,1)))
+model.fit(X_train_res, y_train_res)
 
 # -------------------------------
-# Generate synthetic attacks
-# -------------------------------
-noise = np.random.normal(0, 1, (500, 10))
-synthetic_attacks = generator.predict(noise, verbose=0)
-
-# -------------------------------
-#  Merge GAN data (IMPORTANT)
-# -------------------------------
-synthetic_full = np.zeros((synthetic_attacks.shape[0], X_train.shape[1]))
-synthetic_full[:, :10] = synthetic_attacks
-
-y_synthetic = np.ones(synthetic_full.shape[0])
-
-X_train_final = np.vstack((X_train, synthetic_full))
-y_train_final = np.hstack((y_train, y_synthetic))
-
-# -------------------------------
-# Train model
-# -------------------------------
-model = RandomForestClassifier(n_estimators=100, random_state=42)
-model.fit(X_train_final, y_train_final)
-
-# -------------------------------
-# Test
+# 9. Test
 # -------------------------------
 y_pred = model.predict(X_test)
 
