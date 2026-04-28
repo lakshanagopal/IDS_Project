@@ -1,49 +1,63 @@
-# 🛡️ Intrusion Detection System using Machine Learning & GAN
+# Intrusion Detection System using Machine Learning & GAN
 
-## 📌 Project Description
-This project is an AI-based Intrusion Detection System (IDS) that detects malicious and normal network traffic using machine learning techniques. It is further enhanced using a GAN-based approach to generate synthetic attack data for improved detection of unseen attacks.
-
----
-
-## 🎯 Problem Statement
-Cyber attacks are evolving rapidly, and traditional IDS systems fail to detect new or modified attack patterns. This project aims to improve detection accuracy using machine learning and adversarial data generation.
+##  Project Overview
+This project presents an AI-based Intrusion Detection System (IDS) designed to classify network traffic as **normal** or **malicious**.  
+It leverages machine learning techniques and enhances detection capability using **Generative Adversarial Networks (GANs)** to generate synthetic attack data.
 
 ---
 
-## ⚙️ Technologies Used
-- Python
-- Pandas
-- Scikit-learn
-- TensorFlow (for GAN)
-- Random Forest Classifier
+##  Problem Statement
+With the rapid evolution of cyber threats, traditional IDS systems struggle to detect **unknown or modified attacks**.  
+This project aims to improve detection accuracy by combining:
+- Machine Learning classification
+- Synthetic data generation using GANs
 
 ---
 
-## 📊 Dataset
-:contentReference[oaicite:1]{index=1}  
-- KDDTrain+.txt → Training data  
-- KDDTest+.txt → Testing data  
+##  Technologies Used
+- Python  
+- Pandas & NumPy  
+- Scikit-learn  
+- TensorFlow / Keras  
+- Random Forest Classifier  
 
 ---
 
-## 🧠 Approach
-1. Data preprocessing (encoding, cleaning, scaling)
-2. Train Random Forest classifier for IDS
-3. Generate synthetic attack data using GAN
-4. Improve model training with augmented data
-5. Evaluate performance using accuracy and classification report
+## Dataset
+The model is trained and tested using the **NSL-KDD dataset**:
+- `KDDTrain+.txt` → Training dataset  
+- `KDDTest+.txt` → Testing dataset  
 
 ---
 
-## 🚀 Features
-- Detects normal vs attack traffic
-- Handles categorical network features
-- Machine learning-based classification
-- GAN-based data augmentation (enhancement stage)
+##  Methodology
+1. **Data Preprocessing**
+   - Handling categorical features
+   - Label encoding
+   - Feature scaling
+
+2. **Model Training**
+   - Random Forest classifier for intrusion detection
+
+3. **GAN-based Enhancement**
+   - Generate synthetic attack samples
+   - Improve model robustness against unseen attacks
+
+4. **Evaluation**
+   - Accuracy Score
+   - Classification Report
 
 ---
 
-## 📁 Project Structure
+## Key Features
+✔ Detects normal vs malicious traffic  
+✔ Handles categorical network features  
+✔ Improves detection using synthetic data  
+✔ Scalable for real-world IDS systems  
+
+---
+
+##  Project Structure
 IDS_Project/
 │
 ├── data/
@@ -53,15 +67,11 @@ IDS_Project/
 ├── ids_model.py
 ├── README.md
 
+## Future Enhancements
+Implement advanced GANs (WGAN, CTGAN)
+Multi-class attack classification
+Real-time intrusion detection system
+Deployment using web interface
 
----
-
-## 📈 Future Improvements
-- Improve GAN model (WGAN / CTGAN)
-- Multi-class attack classification
-- Real-time intrusion detection system
-
----
-
-## 👩‍💻 Author
-Lakshana
+## Author
+Lakshana G
